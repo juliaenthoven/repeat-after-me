@@ -7,7 +7,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Repeat After Me uses your camera to record your talking-head videos.",
+        "NSMicrophoneUsageDescription": "Repeat After Me uses your microphone to record your voice.",
+        "NSPhotoLibraryAddUsageDescription": "Repeat After Me saves recorded clips to your camera roll."
+      }
     },
     "android": {
       "adaptiveIcon": {
