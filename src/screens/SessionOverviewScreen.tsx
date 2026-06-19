@@ -388,7 +388,7 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
               activeOpacity={0.85}
             >
               <Text style={styles.saveClipsBtnText}>
-                {sharing ? 'Opening share sheet...' : `↗ Save / Share ${recordedSegments.length} Clip${recordedSegments.length !== 1 ? 's' : ''}`}
+                {sharing ? 'Downloading...' : `↓ Download Clip${recordedSegments.length !== 1 ? 's' : ''}`}
               </Text>
             </TouchableOpacity>
           </>
