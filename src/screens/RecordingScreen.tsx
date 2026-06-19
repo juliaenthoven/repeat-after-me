@@ -135,7 +135,7 @@ export default function RecordingScreen({ session: initialSession, onFinish, onB
     const estimatedMs = segments[idx]?.estimatedDurationMs ?? 3000;
 
     // Start camera recording
-    cameraRef.current?.recordAsync({ maxDuration: MAX_RECORD_SEC }).then((result) => {
+    cameraRef.current?.recordAsync({ maxDuration: MAX_RECORD_SEC, videoQuality: '1080p' }).then((result) => {
       if (result?.uri) {
         recordedUrisRef.current = { ...recordedUrisRef.current, [segments[idx].id]: result.uri };
         setRecordedUris({ ...recordedUrisRef.current });
@@ -245,7 +245,7 @@ export default function RecordingScreen({ session: initialSession, onFinish, onB
 
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" mode="video" />
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" mode="video" zoom={0.015} />
       <View style={styles.overlay} />
 
       {/* Top bar */}
