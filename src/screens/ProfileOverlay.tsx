@@ -334,7 +334,7 @@ export default function ProfileOverlay({ visible, profile, onClose, onProfileCha
                 </View>
 
                 {socialProfiles.length === 0 ? (
-                  <Text style={socialStyles.emptyHint}>Add your social profiles to share them</Text>
+                  <Text style={socialStyles.emptyHint}>Add your social profiles to get personalized script recommendations in your voice</Text>
                 ) : (
                   <View style={socialStyles.iconsRow}>
                     {socialProfiles.map((s) => (
