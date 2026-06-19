@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as Clipboard from 'expo-clipboard';
+import PaywallModal from '../components/PaywallModal';
 import {
   UserProfile, saveProfile, getInitials,
   SocialPlatform, SocialProfile, PLATFORM_META, detectPlatform,
@@ -147,6 +148,7 @@ export default function ProfileOverlay({ visible, profile, onClose, onProfileCha
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
   const [addSocialVisible, setAddSocialVisible] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     setFirstName(profile.firstName);
@@ -313,7 +315,7 @@ export default function ProfileOverlay({ visible, profile, onClose, onProfileCha
                     </Text>
                   </View>
                   {profile.plan === 'Free' && (
-                    <TouchableOpacity style={styles.upgradeBtn}>
+                    <TouchableOpacity style={styles.upgradeBtn} onPress={() => setShowPaywall(true)}>
                       <Text style={styles.upgradeBtnText}>Upgrade →</Text>
                     </TouchableOpacity>
                   )}
@@ -376,6 +378,8 @@ export default function ProfileOverlay({ visible, profile, onClose, onProfileCha
         onAdd={handleAddSocial}
         onClose={() => setAddSocialVisible(false)}
       />
+
+      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </Modal>
   );
 }
