@@ -19,6 +19,8 @@ import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import * as Sharing from 'expo-sharing';
 import { Session, saveSession, deleteSession } from '../utils/storage';
 import * as Clipboard from 'expo-clipboard';
+import { getProfile } from '../utils/profile';
+import PaywallModal from '../components/PaywallModal';
 
 const { width } = Dimensions.get('window');
 
@@ -254,6 +256,12 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
   const [sharing, setSharing] = useState(false);
   const [overlay, setOverlay] = useState<OverlayType>(null);
   const [renameText, setRenameText] = useState(session.title);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    getProfile().then((p) => setIsPro(p.plan === 'Pro'));
+  }, []);
 
   const recordedSegments = session.segments.filter((s) => s.videoUri);
 
@@ -369,12 +377,16 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
             </View>
             <TouchableOpacity
               style={[styles.saveClipsBtn, sharing && styles.saveClipsBtnLoading]}
-              onPress={handleShare}
+              onPress={() => { if (!isPro) { setShowPaywall(true); return; } handleShare(); }}
               disabled={sharing}
               activeOpacity={0.85}
             >
               <Text style={styles.saveClipsBtnText}>
-                {sharing ? 'Opening share sheet...' : `↗ Save / Share ${recordedSegments.length} Clip${recordedSegments.length !== 1 ? 's' : ''}`}
+                {sharing
+                  ? 'Opening share sheet...'
+                  : isPro
+                    ? `↗ Save / Share ${recordedSegments.length} Clip${recordedSegments.length !== 1 ? 's' : ''}`
+                    : `🔒 Save / Share Clips  ·  Pro`}
               </Text>
             </TouchableOpacity>
           </>
@@ -387,6 +399,15 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
             <Text style={styles.autoEditTitle}>No clips yet</Text>
             <Text style={styles.autoEditText}>Record your clips first, then come back here to preview the auto-edit.</Text>
           </View>
+        ) : !isPro ? (
+          <TouchableOpacity style={styles.autoEditLocked} onPress={() => setShowPaywall(true)} activeOpacity={0.85}>
+            <Text style={styles.autoEditLockedIcon}>✂️</Text>
+            <Text style={styles.autoEditLockedTitle}>Auto-Edit Preview</Text>
+            <Text style={styles.autoEditLockedSub}>Silences trimmed · Clips stitched together</Text>
+            <View style={styles.autoEditLockedBadge}>
+              <Text style={styles.autoEditLockedBadgeText}>🔒  Unlock with Pro</Text>
+            </View>
+          </TouchableOpacity>
         ) : (
           <AutoEditPlayer
             segments={recordedSegments.map((s) => ({
@@ -404,6 +425,9 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
         </TouchableOpacity>
       </ScrollView>
 
+      {/* Paywall */}
+      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
+
       {/* ••• Action Menu */}
       <Modal visible={overlay === 'menu'} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={() => setOverlay(null)}>
@@ -415,9 +439,9 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
                   <Text style={styles.menuItemText}>Rename Session</Text>
                 </TouchableOpacity>
                 <View style={styles.menuDivider} />
-                <TouchableOpacity style={styles.menuItem} onPress={() => setOverlay('share')}>
+                <TouchableOpacity style={styles.menuItem} onPress={() => { setOverlay(null); if (!isPro) { setShowPaywall(true); return; } setOverlay('share'); }}>
                   <Text style={styles.menuItemIcon}>🔗</Text>
-                  <Text style={styles.menuItemText}>Share Session</Text>
+                  <Text style={styles.menuItemText}>Share Session{!isPro ? '  🔒' : ''}</Text>
                 </TouchableOpacity>
                 <View style={styles.menuDivider} />
                 <TouchableOpacity style={styles.menuItem} onPress={() => setOverlay('delete')}>
@@ -556,6 +580,27 @@ const styles = StyleSheet.create({
   autoEditBox: { backgroundColor: '#1a1a1a', borderRadius: 14, padding: 20, borderWidth: 1, borderColor: '#333', borderStyle: 'dashed' },
   autoEditTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 8 },
   autoEditText: { color: '#888', fontSize: 14, lineHeight: 20 },
+  autoEditLocked: {
+    backgroundColor: '#141414',
+    borderRadius: 16,
+    padding: 28,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+    borderStyle: 'dashed',
+  },
+  autoEditLockedIcon: { fontSize: 36, marginBottom: 12 },
+  autoEditLockedTitle: { fontSize: 17, fontWeight: '700', color: '#fff', marginBottom: 4 },
+  autoEditLockedSub: { fontSize: 13, color: '#555', marginBottom: 18, textAlign: 'center' },
+  autoEditLockedBadge: {
+    backgroundColor: '#1f1f1f',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  autoEditLockedBadgeText: { color: '#FFD60A', fontSize: 13, fontWeight: '700' },
   reRecordFullBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 12, borderWidth: 1, borderColor: '#FF3B30' },
   reRecordFullBtnText: { color: '#FF3B30', fontSize: 16, fontWeight: '600' },
 

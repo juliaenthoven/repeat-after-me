@@ -17,6 +17,8 @@ import {
 import * as Speech from 'expo-speech';
 import * as Clipboard from 'expo-clipboard';
 import { splitIntoSegments, generateTitle, estimateSegmentDurationMs, Session, Segment } from '../utils/storage';
+import { getProfile } from '../utils/profile';
+import PaywallModal from '../components/PaywallModal';
 
 const VOICES_IOS = [
   { id: 'com.apple.ttsbundle.Samantha-compact', name: 'Samantha (US)' },
@@ -88,10 +90,10 @@ You're not struggling because you're not good enough. You're struggling because 
 // ── Script starter pills row ──────────────────────────────────────────────────
 
 const STARTERS = [
-  { key: 'idea',      label: '✨ Start with an idea' },
-  { key: 'ramble',   label: '🎙 Upload a Ramble' },
-  { key: 'generate', label: '⚡ Generate for me' },
-  { key: 'import',   label: '🔗 Import a reference' },
+  { key: 'idea',      label: '✨ Start with an idea', pro: true  },
+  { key: 'ramble',   label: '🎙 Upload a Ramble',    pro: true  },
+  { key: 'generate', label: '⚡ Generate for me',    pro: false },
+  { key: 'import',   label: '🔗 Import a reference', pro: true  },
 ] as const;
 
 type StarterKey = typeof STARTERS[number]['key'];
@@ -318,6 +320,12 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
   const [availableVoices, setAvailableVoices] = useState(VOICES_IOS);
   const [activeModal, setActiveModal] = useState<StarterKey | null>(null);
   const [generatingInstant, setGeneratingInstant] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    getProfile().then((p) => setIsPro(p.plan === 'Pro'));
+  }, []);
 
   useEffect(() => {
     Speech.getAvailableVoicesAsync().then((voices) => {
@@ -344,6 +352,11 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
   };
 
   const handleStarterPress = (key: StarterKey) => {
+    const starter = STARTERS.find((s) => s.key === key);
+    if (starter?.pro && !isPro) {
+      setShowPaywall(true);
+      return;
+    }
     if (key === 'generate') {
       setGeneratingInstant(true);
       setTimeout(() => {
@@ -422,7 +435,10 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
                       <Text style={styles.starterPillText}>Generating...</Text>
                     </View>
                   ) : (
-                    <Text style={styles.starterPillText}>{s.label}</Text>
+                    <View style={styles.starterPillInner}>
+                      <Text style={styles.starterPillText}>{s.label}</Text>
+                      {s.pro && !isPro && <Text style={styles.lockIcon}>🔒</Text>}
+                    </View>
                   )}
                 </TouchableOpacity>
               ))}
@@ -512,6 +528,9 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
         </TouchableOpacity>
       </ScrollView>
 
+      {/* Paywall */}
+      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
+
       {/* Modals */}
       <IdeaModal
         visible={activeModal === 'idea'}
@@ -593,6 +612,7 @@ const styles = StyleSheet.create({
   },
   starterPillInner: { flexDirection: 'row', alignItems: 'center' },
   starterPillText: { fontSize: 12, color: '#bbb', fontWeight: '500' },
+  lockIcon: { fontSize: 10, marginLeft: 4, opacity: 0.6 },
 
   // Paste button (in footer)
   pasteBtn: {
