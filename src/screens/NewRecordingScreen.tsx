@@ -529,7 +529,7 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
       </ScrollView>
 
       {/* Paywall */}
-      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
+      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} onUpgrade={() => setIsPro(true)} />
 
       {/* Modals */}
       <IdeaModal

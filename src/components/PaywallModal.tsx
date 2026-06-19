@@ -5,12 +5,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Linking,
   ScrollView,
 } from 'react-native';
-
-// Placeholder Stripe checkout URL — swap for a real Payment Link when ready
-const STRIPE_URL = 'https://buy.stripe.com/repeatafterme-pro';
+import { getProfile, saveProfile } from '../utils/profile';
 
 const PRO_FEATURES = [
   { icon: '✨', text: 'AI script generation from an idea or prompt' },
@@ -23,11 +20,15 @@ const PRO_FEATURES = [
 interface Props {
   visible: boolean;
   onClose: () => void;
+  onUpgrade?: () => void;
 }
 
-export default function PaywallModal({ visible, onClose }: Props) {
-  const handleUpgrade = () => {
-    Linking.openURL(STRIPE_URL).catch(() => {});
+export default function PaywallModal({ visible, onClose, onUpgrade }: Props) {
+  const handleUpgrade = async () => {
+    const profile = await getProfile();
+    await saveProfile({ ...profile, plan: 'Pro' });
+    onUpgrade?.();
+    onClose();
   };
 
   return (

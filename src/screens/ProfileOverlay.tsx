@@ -379,7 +379,11 @@ export default function ProfileOverlay({ visible, profile, onClose, onProfileCha
         onClose={() => setAddSocialVisible(false)}
       />
 
-      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onUpgrade={() => onProfileChange({ ...profile, plan: 'Pro' })}
+      />
     </Modal>
   );
 }

@@ -428,7 +428,7 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
       </ScrollView>
 
       {/* Paywall */}
-      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} />
+      <PaywallModal visible={showPaywall} onClose={() => setShowPaywall(false)} onUpgrade={() => setIsPro(true)} />
 
       {/* ••• Action Menu */}
       <Modal visible={overlay === 'menu'} transparent animationType="fade">
