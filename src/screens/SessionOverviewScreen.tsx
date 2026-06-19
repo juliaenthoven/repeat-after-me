@@ -383,16 +383,12 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
             </View>
             <TouchableOpacity
               style={[styles.saveClipsBtn, sharing && styles.saveClipsBtnLoading]}
-              onPress={() => { if (!isPro) { setShowPaywall(true); return; } handleShare(); }}
+              onPress={handleShare}
               disabled={sharing}
               activeOpacity={0.85}
             >
               <Text style={styles.saveClipsBtnText}>
-                {sharing
-                  ? 'Opening share sheet...'
-                  : isPro
-                    ? `↗ Save / Share ${recordedSegments.length} Clip${recordedSegments.length !== 1 ? 's' : ''}`
-                    : `🔒 Save / Share Clips  ·  Pro`}
+                {sharing ? 'Opening share sheet...' : `↗ Save / Share ${recordedSegments.length} Clip${recordedSegments.length !== 1 ? 's' : ''}`}
               </Text>
             </TouchableOpacity>
           </>

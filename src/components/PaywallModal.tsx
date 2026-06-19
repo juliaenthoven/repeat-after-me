@@ -17,7 +17,7 @@ const PRO_FEATURES = [
   { icon: '🎙', text: 'Upload a ramble — we transcribe & polish it' },
   { icon: '🔗', text: 'Import & adapt scripts from reference videos' },
   { icon: '✂️', text: 'Auto-Edit preview with silence trimming' },
-  { icon: '↗', text: 'Save & share your recorded clips' },
+  { icon: '🔗', text: 'Share a session link for review on any device' },
 ];
 
 interface Props {
