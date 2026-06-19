@@ -340,7 +340,7 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
 
   useEffect(() => {
     if (script.trim()) {
-      setPreviewSegments(splitIntoSegments(script, segmentLength));
+      setPreviewSegments(splitIntoSegments(script));
     } else {
       setPreviewSegments([]);
     }
@@ -378,7 +378,7 @@ export default function NewRecordingScreen({ onBack, onStart }: Props) {
       Alert.alert('No script', 'Please add a script to continue.');
       return;
     }
-    const segments = splitIntoSegments(script, segmentLength);
+    const segments = splitIntoSegments(script);
     const title = generateTitle(script);
     const session: Session = {
       id: Date.now().toString(),

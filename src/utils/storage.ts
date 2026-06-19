@@ -47,65 +47,11 @@ export async function deleteSession(id: string): Promise<void> {
   await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.filter((s) => s.id !== id)));
 }
 
-// Break a single string into pieces no longer than maxLen, splitting at
-// the provided separator pattern. Returns the original string in an array
-// if it is already short enough.
-function breakAt(text: string, maxLen: number, sep: RegExp): string[] {
-  if (text.length <= maxLen) return [text];
-  const parts = text.split(sep).map((p) => p.trim()).filter(Boolean);
-  const result: string[] = [];
-  let current = '';
-  for (const part of parts) {
-    const candidate = current ? current + ' ' + part : part;
-    if (candidate.length > maxLen && current) {
-      result.push(current);
-      current = part;
-    } else {
-      current = candidate;
-    }
-  }
-  if (current) result.push(current);
-  return result;
-}
 
-export function splitIntoSegments(script: string, segmentLength: number): string[] {
-  // 1. Split into sentences.
-  const sentences = (script.match(/[^.!?]+[.!?]*/g) || [script]).map((s) => s.trim()).filter(Boolean);
-
-  // 2. For any sentence longer than segmentLength, break further at clauses
-  //    (commas / semicolons / colons), then at words.
-  const atoms: string[] = [];
-  for (const sentence of sentences) {
-    if (sentence.length <= segmentLength) {
-      atoms.push(sentence);
-      continue;
-    }
-    const clauses = breakAt(sentence, segmentLength, /[,;:]\s*/);
-    for (const clause of clauses) {
-      if (clause.length <= segmentLength) {
-        atoms.push(clause);
-      } else {
-        // Last resort: split at word boundaries.
-        const byWord = breakAt(clause, segmentLength, /\s+/);
-        atoms.push(...byWord);
-      }
-    }
-  }
-
-  // 3. Greedily combine consecutive atoms into segments up to segmentLength.
-  const segments: string[] = [];
-  let current = '';
-  for (const atom of atoms) {
-    const candidate = current ? current + ' ' + atom : atom;
-    if (candidate.length > segmentLength && current) {
-      segments.push(current);
-      current = atom;
-    } else {
-      current = candidate;
-    }
-  }
-  if (current) segments.push(current);
-  return segments;
+export function splitIntoSegments(script: string): string[] {
+  return (script.match(/[^.!?]+[.!?]*/g) || [script])
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export function generateTitle(script: string): string {
