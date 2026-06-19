@@ -1,16 +1,17 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
   StyleSheet,
-
-  ScrollView,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '../hooks/useFocusEffect';
 import { getSessions, Session } from '../utils/storage';
+import { getProfile, getInitials, UserProfile } from '../utils/profile';
+import ProfileOverlay from './ProfileOverlay';
 
 interface Props {
   onNewRecording: () => void;
@@ -38,7 +39,7 @@ function SessionCard({ session, onPress }: { session: Session; onPress: () => vo
           <Text style={styles.cardClips}>{recorded} clip{recorded !== 1 ? 's' : ''} recorded</Text>
         )}
         <View style={styles.cardSegmentPills}>
-          {session.segments.slice(0, 5).map((seg, i) => (
+          {session.segments.slice(0, 5).map((seg) => (
             <View
               key={seg.id}
               style={[styles.segPill, seg.videoUri ? styles.segPillDone : styles.segPillEmpty]}
@@ -53,8 +54,33 @@ function SessionCard({ session, onPress }: { session: Session; onPress: () => vo
   );
 }
 
+function AvatarButton({ profile, onPress }: { profile: UserProfile; onPress: () => void }) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.avatarBtn}>
+      {profile.avatarUri ? (
+        <Image source={{ uri: profile.avatarUri }} style={styles.avatarImg} />
+      ) : (
+        <View style={styles.avatarInitials}>
+          <Text style={styles.avatarInitialsText}>{getInitials(profile)}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+}
+
 export default function HomeScreen({ onNewRecording, onSession }: Props) {
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [profile, setProfile] = useState<UserProfile>({
+    firstName: 'Julia',
+    lastName: 'Enthoven',
+    email: 'julia@kapwing.com',
+    plan: 'Free',
+  });
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => {
+    getProfile().then(setProfile);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,10 +90,14 @@ export default function HomeScreen({ onNewRecording, onSession }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.logo}>🦜</Text>
-        <Text style={styles.appTitle}>Repeat After Me</Text>
-        <Text style={styles.subtitle}>Audio Teleprompter</Text>
+      {/* Top bar */}
+      <View style={styles.topBar}>
+        <View>
+          <Text style={styles.logo}>🦜</Text>
+          <Text style={styles.appTitle}>Repeat After Me</Text>
+          <Text style={styles.subtitle}>Audio Teleprompter</Text>
+        </View>
+        <AvatarButton profile={profile} onPress={() => setProfileOpen(true)} />
       </View>
 
       <TouchableOpacity style={styles.newButton} onPress={onNewRecording} activeOpacity={0.85}>
@@ -91,16 +121,52 @@ export default function HomeScreen({ onNewRecording, onSession }: Props) {
           contentContainerStyle={styles.list}
         />
       )}
+
+      <ProfileOverlay
+        visible={profileOpen}
+        profile={profile}
+        onClose={() => setProfileOpen(false)}
+        onProfileChange={setProfile}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   logo: { fontSize: 48, marginBottom: 4 },
   appTitle: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
   subtitle: { fontSize: 14, color: '#888', marginTop: 2 },
+  avatarBtn: {
+    marginTop: 8,
+  },
+  avatarInitials: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FF3B30',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitialsText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  avatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
   newButton: {
     flexDirection: 'row',
     alignItems: 'center',
