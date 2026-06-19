@@ -30,7 +30,7 @@ class ClipErrorBoundary extends Component<{ children: React.ReactNode; transcrip
   render() {
     if (this.state.failed) {
       return (
-        <View style={styles.clipCard}>
+        <View style={[styles.clipCard, { width: CARD_WIDTH, marginRight: CARD_SPACING }]}>
           <View style={[styles.clipVideo, styles.clipVideoFallback]}>
             <Text style={styles.clipVideoFallbackIcon}>🎬</Text>
             <Text style={styles.clipVideoFallbackText}>Clip unavailable</Text>
@@ -53,7 +53,8 @@ function formatDuration(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const CARD_WIDTH = width - 40;
+const CARD_WIDTH = width * 0.5;
+const CARD_SPACING = 12;
 
 function ClipPlayer({ uri, index, total, transcript }: { uri: string; index: number; total: number; transcript: string }) {
   const videoRef = useRef(null);
@@ -71,7 +72,7 @@ function ClipPlayer({ uri, index, total, transcript }: { uri: string; index: num
   };
 
   return (
-    <View style={styles.clipCard}>
+    <View style={[styles.clipCard, { width: CARD_WIDTH, marginRight: CARD_SPACING }]}>
       <View style={[styles.clipVideoWrapper, { height: videoHeight, backgroundColor: '#000' }]}>
         <Video
           ref={videoRef}
@@ -90,7 +91,7 @@ function ClipPlayer({ uri, index, total, transcript }: { uri: string; index: num
       </View>
       <View style={styles.clipInfo}>
         <Text style={styles.clipNum}>Clip {index + 1} of {total}</Text>
-        <Text style={styles.clipTranscript}>{transcript}</Text>
+        <Text style={styles.clipTranscript} numberOfLines={3}>{transcript}</Text>
       </View>
     </View>
   );
@@ -359,9 +360,14 @@ export default function SessionOverviewScreen({ session: initialSession, onBack,
         ) : (
           <>
             <ScrollView
-              horizontal showsHorizontalScrollIndicator={false} pagingEnabled
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={CARD_WIDTH + CARD_SPACING}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
               style={styles.clipScroll}
-              onScroll={(e) => setCurrentClip(Math.round(e.nativeEvent.contentOffset.x / (width - 40)))}
+              onScroll={(e) => setCurrentClip(Math.round(e.nativeEvent.contentOffset.x / (CARD_WIDTH + CARD_SPACING)))}
               scrollEventThrottle={16}
             >
               {recordedSegments.map((seg, i) => (
@@ -560,7 +566,7 @@ const styles = StyleSheet.create({
   reRecordBtn: { backgroundColor: '#FF3B30', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
   reRecordBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   clipScroll: { marginHorizontal: -20 },
-  clipCard: { width: width - 40, marginHorizontal: 20, backgroundColor: '#1a1a1a', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#2a2a2a' },
+  clipCard: { backgroundColor: '#1a1a1a', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#2a2a2a' },
   clipVideoWrapper: { position: 'relative' },
   clipVideo: { width: '100%', backgroundColor: '#000' },
   clipVideoFallback: { alignItems: 'center', justifyContent: 'center' },
