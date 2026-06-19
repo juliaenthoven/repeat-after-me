@@ -1,14 +1,18 @@
-import React, { useState, Component } from 'react';
+import React, { useState, Component, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, LogBox } from 'react-native';
 
 LogBox.ignoreLogs(['[expo-av]: Expo AV has been deprecated']);
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthScreen from './src/screens/AuthScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import NewRecordingScreen from './src/screens/NewRecordingScreen';
 import RecordingScreen from './src/screens/RecordingScreen';
 import SessionOverviewScreen from './src/screens/SessionOverviewScreen';
 import { Session } from './src/utils/storage';
+
+const AUTH_KEY = 'ram_signed_in';
 
 type Screen = 'home' | 'new' | 'recording' | 'overview';
 
@@ -92,16 +96,45 @@ class ErrorBoundary extends Component<BoundaryProps, BoundaryState> {
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [signedIn, setSignedIn] = useState<boolean | null>(null); // null = loading
   const [screen, setScreen] = useState<Screen>('home');
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastKey, setToastKey] = useState(0);
+
+  useEffect(() => {
+    AsyncStorage.getItem(AUTH_KEY).then((val) => setSignedIn(val === 'true'));
+  }, []);
+
+  const handleSignIn = async () => {
+    await AsyncStorage.setItem(AUTH_KEY, 'true');
+    setSignedIn(true);
+  };
 
   const showError = (msg: string) => {
     setToastMessage(msg);
     setToastKey((k) => k + 1);
     setScreen('home');
   };
+
+  // Still checking AsyncStorage
+  if (signedIn === null) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <View style={{ flex: 1, backgroundColor: '#0a0a0a' }} />
+      </SafeAreaProvider>
+    );
+  }
+
+  if (!signedIn) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <AuthScreen onSignIn={handleSignIn} />
+      </SafeAreaProvider>
+    );
+  }
 
   return (
     <SafeAreaProvider>
